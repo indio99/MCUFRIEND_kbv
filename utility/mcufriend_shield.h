@@ -421,8 +421,8 @@ void write_8(uint8_t x)
 #define PIN_OUTPUT(port, pin) PIN_MODE2((port)->MODER, pin, 0x1)
 
 #elif defined(STM32F446xx)
-#define WRITE_DELAY { WR_ACTIVE8; }
-#define READ_DELAY  { RD_ACTIVE16;}
+#define WRITE_DELAY { WR_ACTIVE8; WR_ACTIVE4; }
+#define READ_DELAY  { RD_ACTIVE16; RD_ACTIVE4; }
 #define GPIO_INIT()   { RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOBEN | RCC_AHB1ENR_GPIOCEN; }
 #define PIN_OUTPUT(port, pin) PIN_MODE2((port)->MODER, pin, 0x1)
 
