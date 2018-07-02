@@ -221,6 +221,7 @@ uint16_t MCUFRIEND_kbv::readID(void)
     uint32_t ret32 = readReg32(0x04);
     msb = ret32 >> 16;
     ret = ret32;	
+    if (msb == 0x29 && ret == 0x10F0) return 0x2910; //Tongbajiel [xx 29 10 F0]
 //    if (msb = 0x38 && ret == 0x8000) //unknown [xx 38 80 00] with D3 = 0x1602
     if (msb == 0x00 && ret == 0x8000) { //HX8357-D [xx 00 80 00]
 #if 1
@@ -2365,6 +2366,18 @@ case 0x4532:    // thanks Leodino
             0x36, 1, 0x00,      //Memory Access [00] pointless but stops an empty array
         };
         table8_ads = ILI9329_regValues, table_size = sizeof(ILI9329_regValues);
+        break;
+
+    case 0x2910:     //Tongbajiel 320x240.  Rearrange attributes 
+        _lcd_capable = AUTO_READINC | MIPI_DCS_REV1 | MV_AXIS | INVERT_SS | REV_SCREEN;
+        static const uint8_t X2910_regValues[] PROGMEM = {
+            0x36, 1, 0x00,      //Memory Access [00] pointless but stops an empty array
+        };
+        table8_ads = X2910_regValues, table_size = sizeof(X2910_regValues);
+        p16 = (int16_t *) & HEIGHT;
+        *p16 = 240;
+        p16 = (int16_t *) & WIDTH;
+        *p16 = 320;
         break;
 
     case 0x9340:                //ILI9340 thanks Ravi_kanchan2004.
