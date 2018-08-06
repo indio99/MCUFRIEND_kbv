@@ -173,6 +173,15 @@ uint16_t MCUFRIEND_kbv::readID(void)
 {
     uint16_t ret, ret2;
     uint8_t msb;
+	ret = readReg32(0xD3);      //for ILI9488, 9486, 9340, 9341
+    msb = ret >> 8;
+    if (msb == 0x93 || msb == 0x94 || msb == 0x98 || msb == 0x77 || msb == 0x16) {
+        readReg32(0xD3);        //to keep ILI9806 happy
+        return ret;             //0x9488, 9486, 9340, 9341, 7796
+    }
+    if (ret == 0x00D3 || ret == 0xD3D3)
+        return ret;             //16-bit write-only bus
+	
     ret = readReg(0);           //forces a reset() if called before begin()
     if (ret == 0x5408)          //the SPFD5408 fails the 0xD3D3 test.
         return 0x5408;
@@ -241,14 +250,7 @@ uint16_t MCUFRIEND_kbv::readID(void)
         return 0x7789;
     if (ret == 0xAC11)          //?unknown [xx 61 AC 11]
         return 0xAC11;
-    ret = readReg32(0xD3);      //for ILI9488, 9486, 9340, 9341
-    msb = ret >> 8;
-    if (msb == 0x93 || msb == 0x94 || msb == 0x98 || msb == 0x77 || msb == 0x16) {
-        readReg32(0xD3);        //to keep ILI9806 happy
-        return ret;             //0x9488, 9486, 9340, 9341, 7796
-    }
-    if (ret == 0x00D3 || ret == 0xD3D3)
-        return ret;             //16-bit write-only bus
+    
 /*
 	msb = 0x12;                 //read 3rd,4th byte.  does not work in parallel
 	pushCommand(0xD9, &msb, 1);
