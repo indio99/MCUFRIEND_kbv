@@ -676,14 +676,19 @@ static void setReadDir()
 #define READ_8(dst)   { RD_STROBE; READ_DELAY; dst = read_8(); RD_IDLE; }
 #define READ_16(dst)  { uint8_t hi; READ_8(hi); READ_8(dst); dst |= (hi << 8); }
 
-#if 0
+#if 1
 #define PIN_LOW(p, b)        (*((volatile uint32_t*)(&p)+2)) = (1<<(b&31))
 #define PIN_HIGH(p, b)       (*((volatile uint32_t*)(&p)+1)) = (1<<(b&31))
+#define CD_COMMAND          (digitalWrite(CD_PIN, LOW))
+#define CD_DATA             (digitalWrite(CD_PIN, HIGH))
 #else
 #define PIN_LOW(p, b)        (digitalWrite(b, LOW))
 #define PIN_HIGH(p, b)       (digitalWrite(b, HIGH))
 #endif
 #define PIN_OUTPUT(p, b)     (pinMode(b, OUTPUT))
+
+#define WriteCmd(x)  { CD_COMMAND; RD_IDLE; WR_IDLE; write16(x); CD_DATA; }
+#define WriteData(x) { CD_DATA; write16(x); }
 
 #else
 #error MCU unsupported
@@ -697,8 +702,10 @@ static void setReadDir()
 #define WR_ACTIVE  PIN_LOW(WR_PORT, WR_PIN)
 #define WR_IDLE    PIN_HIGH(WR_PORT, WR_PIN)
 #define WR_OUTPUT  PIN_OUTPUT(WR_PORT, WR_PIN)
-#define CD_COMMAND PIN_LOW(CD_PORT, CD_PIN)
-#define CD_DATA    PIN_HIGH(CD_PORT, CD_PIN)
+#ifndef CD_COMMAND
+  #define CD_COMMAND PIN_LOW(CD_PORT, CD_PIN)
+  #define CD_DATA    PIN_HIGH(CD_PORT, CD_PIN)
+#endif
 #define CD_OUTPUT  PIN_OUTPUT(CD_PORT, CD_PIN)
 #define CS_ACTIVE  PIN_LOW(CS_PORT, CS_PIN)
 #define CS_IDLE    PIN_HIGH(CS_PORT, CS_PIN)
@@ -715,5 +722,7 @@ static void setReadDir()
 #define GPIO_INIT()
 #endif
 #define CTL_INIT()   { GPIO_INIT(); RD_OUTPUT; WR_OUTPUT; CD_OUTPUT; CS_OUTPUT; RESET_OUTPUT; }
-#define WriteCmd(x)  { CD_COMMAND; write16(x); CD_DATA; }
-#define WriteData(x) { write16(x); }
+#ifndef WriteCmd
+  #define WriteCmd(x)  { CD_COMMAND; write16(x); CD_DATA; }
+  #define WriteData(x) { write16(x); }
+#endif
