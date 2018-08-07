@@ -183,6 +183,8 @@ uint16_t MCUFRIEND_kbv::readID(void)
     ret = readReg(0x67);        //HX8347-A
     if (ret == 0x4747)
         return 0x8347;
+    ret = readReg(0xD3, 1);     //for ILI9806.  should be similar to readReg32(0xD3)
+    if (ret == 0x9806) return ret; //thanks indio99
 //#if defined(SUPPORT_1963) && USING_16BIT_BUS
     ret = readReg32(0xA1);      //SSD1963: [01 57 61 01]
     if (ret == 0x6101)
@@ -241,8 +243,6 @@ uint16_t MCUFRIEND_kbv::readID(void)
         return 0x7789;
     if (ret == 0xAC11)          //?unknown [xx 61 AC 11]
         return 0xAC11;
-    ret = readReg(0xD3, 1);     //for ILI9806.  should be similar to readReg32(0xD3)
-    if (ret == 0x9806) return ret; //thanks indio99
     ret = readReg32(0xD3);      //for ILI9488, 9486, 9340, 9341
     msb = ret >> 8;
     if (msb == 0x93 || msb == 0x94 || msb == 0x77 || msb == 0x16) {
